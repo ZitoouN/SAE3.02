@@ -1,31 +1,28 @@
 import socket
 
-def Serveur():
-    server_host = '127.0.0.1'
-    port = 8080
+host = "127.0.0.1" # "", "127.0.0.1
+port = 8080
 
-    serveur = socket.socket()
-    serveur.bind((server_host, port))
+server_socket = socket.socket()
+server_socket.bind((host, port))
+server_socket.listen(1)
 
-    serveur.listen(1)
-    msg = ""
+print('En attente du client')
+conn, address = server_socket.accept()
+print(f'Client connecté {address}')
 
+while True:
+    msgb = conn.recv(1024) # message en by
+    message = msgb.decode()
+    print(f"Message du client : {message}")
 
-    while msg != 'arret':
-        conn, adress = serveur.accept()
-        msg = conn.recv(1024).decode()
-        print('Client :', msg)
-        conn.send(msg.encode())
-        while msg != 'arret' and 'bye':
-            msg = conn.recv(1024).decode()
-            conn.send(msg.encode())
-            print('Client :', msg)
-        if msg == 'bye':
-            conn.send(msg.encode())
-            conn.close()
-    conn.send(msg.encode())
-    serveur.close()
+# J'envoie un message
+reply = input("Saisir un message : ")
+conn.send(reply.encode())
+print(f"Message {reply} envoyé")
 
-
-if __name__ == '__main__':
-    Serveur()
+# Fermeture
+conn.close()
+print("Fermeture de la socket client")
+server_socket.close()
+print("Fermeture de la socket serveur")
