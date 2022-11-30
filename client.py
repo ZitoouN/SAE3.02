@@ -3,6 +3,11 @@ import platform
 import threading
 import os
 
+mess = ''
+data = ''
+arret = 'arret'
+bye = 'bye'
+
 def connection():
     global client
     print('-----CONNEXION AU SERVEUR-----')
@@ -21,17 +26,17 @@ def connection():
 def communication(client):
     global user
     while True:
-        message = input(f"{user}>")
-        client.send(message.encode())
-        if message == "disconnect":
+        mess = input(f"{user}>")
+        client.send(mess.encode())
+        if mess == "kill":
+            client.send(mess.encode("kill"))
             client.close()
-            break
-        elif message == "close":
-            print ("Client disconnected")
-            exit()
+        elif mess == "disconnect":
+            client.close()
 
 
 def reception(client):
+    global user
     while True:
         data = client.recv(1024).decode()
         print(data)
@@ -42,14 +47,12 @@ def main():
     print('-----CLIENT-----')
     user = input('Inserer le nom du client : ')
     connection()
-    t1 = threading.Thread(target=reception, args=[client])
-    t2 = threading.Thread(target=communication, args=[client])
+    t1 = threading.Thread(target=communication, args=[client])
+    t2 = threading.Thread(target=reception, args=[client])
     t1.start()
     t2.start()
     t1.join()
     t2.join()
-    client.close()
-    print('Successfully disconnected from socket')
 
 
 if __name__ == '__main__':
