@@ -1,7 +1,6 @@
+import sys
 from socket import socket
-import platform
 import threading
-import os
 
 mess = ''
 data = ''
@@ -32,7 +31,8 @@ def communication(client):
             client.send(mess.encode("kill"))
             client.close()
         elif mess == "disconnect":
-            client.close()
+            message = "disconnect"
+            client.send(mess.encode({message}))
 
 
 def reception(client):
@@ -43,6 +43,7 @@ def reception(client):
 
 
 def main():
+    global s_t
     global user
     print('-----CLIENT-----')
     user = input('Inserer le nom du client : ')
@@ -53,6 +54,7 @@ def main():
     t2.start()
     t1.join()
     t2.join()
+
 
 
 if __name__ == '__main__':
