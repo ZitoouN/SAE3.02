@@ -4,29 +4,31 @@ import platform
 import psutil
 from ipaddress import IPv4Network
 
-def Serveur():
-    data = ''
+def serveur():
+    data = ""
     conn = None
-    serveur_socket = None
+    server_socket = None
 
-    while data != "kill":
-        serveur_socket = socket.socket()
-        serveur_socket.bind(("127.0.0.1", 8080))
-        serveur_socket.listen(1)
-        print('En attente de connexion client ...')
+    while data != "kill" :
+        data = ""
+        server_socket = socket.socket()
+        server_socket.bind(("127.0.0.1", 8080))
 
-        while data != "reset" and "kill":
-            data = ''
-            try:
-                conn, addr = serveur_socket.accept()
-                print(f'Client connecté : {addr}')
+        server_socket.listen(1)
+        print('Serveur en attente de connexion')
+
+        while data != "kill" and data != "reset":
+            data = ""
+            try :
+                conn, addr = server_socket.accept()
+                print (addr)
             except ConnectionError:
-                print("Connection ERROR")
+                print ("erreur de connection")
                 break
-            else:
-                while data != "kill" and data != "reset" and data != "disconnect":
+            else :
+                while data != "disconnect" and data != "reset" and data != "kill":
                     data = conn.recv(1024).decode()
-                    print("Message du client : ", data)
+                    print ("Received from client: ", data)
 
                     if data == 'OS':
                         conn.send(f"{platform.system()}".encode())
@@ -64,13 +66,16 @@ def Serveur():
 
 
                     elif data == 'Connexion information':
-                        conn.send(f"Le nom de la machine est {platform.node()}, son IP est la suivante : {socket.gethostbyname(socket.gethostname())}".encode())
+                        conn.send(
+                            f"Le nom de la machine est {platform.node()}, son IP est la suivante : {socket.gethostbyname(socket.gethostname())}".encode())
 
-            conn.close()
+                    conn.send(data.encode())
+                conn.close()
+        print ("Connection closed")
 
-        print("Fermetture de la connection")
-        serveur_socket.close()
-        print("Serveur fermé")
+        server_socket.close()
+        print ("Server closed")
+
 
 if __name__ == '__main__':
-    Serveur()
+    serveur()
