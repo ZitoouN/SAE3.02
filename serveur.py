@@ -4,77 +4,73 @@ import platform
 import psutil
 from ipaddress import IPv4Network
 
-host = "127.0.0.1"
-port = 8080
-disc = True
+def Serveur():
+    data = ''
+    conn = None
+    serveur_socket = None
 
-server_socket = socket.socket()
-server_socket.bind((host, port))
-server_socket.listen(1)
+    while data != "kill":
+        serveur_socket = socket.socket()
+        serveur_socket.bind(("127.0.0.1", 8080))
+        serveur_socket.listen(1)
+        print('En attente de connexion client ...')
 
+        while data != "reset" and "kill":
+            data = ''
+            try:
+                conn, addr = serveur_socket.accept()
+                print(f'Client connecté : {addr}')
+            except ConnectionError:
+                print("Connection ERROR")
+                break
+            else:
+                while data != "kill" and data != "reset" and data != "disconnect":
+                    data = conn.recv(1024).decode()
+                    print("Message du client : ", data)
 
-print('En attente de connexion client ...')
-conn, address = server_socket.accept()
-print(f'Client connecté : {address}')
+                    if data == 'OS':
+                        conn.send(f"{platform.system()}".encode())
 
-
-while disc:
-    data = conn.recv(1024).decode()
-
-    if data == 'OS':
-        conn.send(f"{platform.system()}".encode())
-        print(f"Message du client : OS")
-
-
-    elif data == 'disconnect':
-        conn.close()
-        print(f"Message du client : disconnect")
-        print(f"Client déconnecté ... en attente d'une nouvelle connexion")
-        conn, address = server_socket.accept()
-
-
-    elif data == 'CPU':
-        nbr_cpu = psutil.cpu_count()
-        cpus = psutil.cpu_percent(interval=2, percpu=True)
-        cpusfinal = str(cpus)[1:-1]
-        conn.send(f"Nombre de CPU logiques dans le système : {nbr_cpu} ".encode())
-        conn.send(f"Utilisation de tous les CPU : {cpusfinal} ".encode())
-        print(f"Message du client : CPU")
+                    elif data == 'CPU':
+                        nbr_cpu = psutil.cpu_count()
+                        cpus = psutil.cpu_percent(interval=2, percpu=True)
+                        cpusfinal = str(cpus)[1:-1]
+                        conn.send(f"Nombre de CPU logiques dans le système : {nbr_cpu} ".encode())
+                        conn.send(f"Utilisation de tous les CPU : {cpusfinal} ".encode())
 
 
-    elif data == 'RAM':
-        meminfo = psutil.virtual_memory()
-        total = round(meminfo.total / 1_073_741_824, 2)
-        utilise = round(meminfo.used / 1_073_741_824, 2)
-        disponible = round(meminfo.free / 1_073_741_824, 2)
-        conn.send(f"Total de RAM : {total} Go, RAM utilsé : {utilise} Go, RAM disponible : {disponible} Go".encode())
-        print(f"Message du client : RAM")
+                    elif data == 'RAM':
+                        meminfo = psutil.virtual_memory()
+                        total = round(meminfo.total / 1_073_741_824, 2)
+                        utilise = round(meminfo.used / 1_073_741_824, 2)
+                        disponible = round(meminfo.free / 1_073_741_824, 2)
+                        conn.send(
+                            f"Total de RAM : {total} Go, RAM utilsé : {utilise} Go, RAM disponible : {disponible} Go".encode())
 
 
-    elif data == 'IP':
-        ipa = []
-        for nic, addrs in psutil.net_if_addrs().items():
-            for addr in addrs:
-                address = addr.address
-                if addr.family == AF_INET and not address.startswith("169.254"):
-                    ipa.append(f"{address}/{IPv4Network('0.0.0.0/' + addr.netmask).prefixlen}")
-        ipfinal = str(ipa)[1:-1]
-        conn.send(f"IP de la machine : {ipfinal}".encode())
-        print(f"Message du client : IP")
+                    elif data == 'IP':
+                        ipa = []
+                        for nic, addrs in psutil.net_if_addrs().items():
+                            for addr in addrs:
+                                address = addr.address
+                                if addr.family == AF_INET and not address.startswith("169.254"):
+                                    ipa.append(f"{address}/{IPv4Network('0.0.0.0/' + addr.netmask).prefixlen}")
+                        ipfinal = str(ipa)[1:-1]
+                        conn.send(f"IP de la machine : {ipfinal}".encode())
 
 
-    elif data == 'Name':
-        conn.send(f"Nom de la machine : {platform.node()}".encode())
-        print(f"Message du client : Name")
+                    elif data == 'Name':
+                        conn.send(f"Nom de la machine : {platform.node()}".encode())
 
 
-    elif data == 'Connexion information':
-        conn.send(f"Le nom de la machine est {socket.gethostbyname(socket.gethostname())} ".encode())
-        print(f"Message du client : Name")
+                    elif data == 'Connexion information':
+                        conn.send(f"Le nom de la machine est {platform.node()}, son IP est la suivante : {socket.gethostbyname(socket.gethostname())}".encode())
 
+            conn.close()
 
+        print("Fermetture de la connection")
+        serveur_socket.close()
+        print("Serveur fermé")
 
-
-
-    else :
-        print(f"Message du client : {data}")
+if __name__ == '__main__':
+    Serveur()
