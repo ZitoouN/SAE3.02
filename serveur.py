@@ -4,7 +4,7 @@ import platform
 import psutil
 from ipaddress import IPv4Network
 
-def serveur():
+def Serveur():
     data = ""
     conn = None
     server_socket = None
@@ -15,20 +15,21 @@ def serveur():
         server_socket.bind(("127.0.0.1", 8080))
 
         server_socket.listen(1)
-        print('Serveur en attente de connexion')
+        print('-----SERVEUR-----')
+        print('En attente de connexion client ...')
 
         while data != "kill" and data != "reset":
             data = ""
             try :
                 conn, addr = server_socket.accept()
-                print (addr)
+                print(f'Client connecté : {addr}')
             except ConnectionError:
-                print ("erreur de connection")
+                print ("CONNECTION ERROR")
                 break
             else :
                 while data != "disconnect" and data != "reset" and data != "kill":
                     data = conn.recv(1024).decode()
-                    print ("Received from client: ", data)
+                    print ("Message du client : ", data)
 
                     if data == 'OS':
                         conn.send(f"{platform.system()}".encode())
@@ -71,11 +72,11 @@ def serveur():
 
                     conn.send(data.encode())
                 conn.close()
-        print ("Connection closed")
+        print ("CONNECTION FERMÉ !")
 
         server_socket.close()
-        print ("Server closed")
+        print ("CONNECTION FERMÉ !")
 
 
 if __name__ == '__main__':
-    serveur()
+    Serveur()
