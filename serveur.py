@@ -75,7 +75,7 @@ def Serveur():
         print ("CONNECTION FERMÉ !")
 
         server_socket.close()
-        print ("CONNECTION FERMÉ !")
+        print ("SERVEUR FERMÉ !")
 
 
 if __name__ == '__main__':
