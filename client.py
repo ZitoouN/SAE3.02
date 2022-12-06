@@ -1,61 +1,85 @@
-import sys
-from socket import socket
-import threading
+import socket, threading, sys
 
-mess = ''
-data = ''
-arret = 'arret'
-bye = 'bye'
 
-def connection():
-    global client
-    print('-----CONNEXION AU SERVEUR-----')
-    a = str(input('Entrer une adresse IP : '))
-    p = int(input('Entrer le port du serveur : '))
-    client = socket()
-    try:
-        client.connect((a, p))
-    except:
-        print('Une erreur a été détecté, veuillez réessayer')
-        return connection()
+class Client():
+    def __init__(self, host, port):
+        self.__port = port
+        self.__host = host
+        self.__socket = socket.socket()
+        self.__thread = None
+
+    def host(self, host):
+        self.__host = host
+
+    def port(self, port):
+        self.__port = port
+
+
+    def connection(self) -> int:
+        try:
+            self.__socket.connect((self.__host, self.__port))
+        except ConnectionRefusedError:
+            print("CONNECTION ERREUR SERVEUR")
+            return -1
+        except ConnectionError:
+            print("CONNECTION ERROR")
+            return -1
+        except ConnectionResetError:
+            print('CONNECTION RESET ERROR')
+            return -1
+        else:
+            print("Connexion réussie !")
+            return 0
+
+    def Connect(self):
+        self.__socket.connect((self.__host, self.__port))
+
+
+    def dialogue(self):
+        msg = ""
+        self.__thread = threading.Thread(target=self.__reception, args=[self.__socket, ])
+        self.__thread.start()
+        while msg != "kill" and msg != "disconnect" and msg != "reset":
+            msg = self.__envoi()
+        self.__thread.join()
+        self.__socket.close()
+
+
+    def __envoi(self):
+        msg = input("CLIENT>")
+        try:
+            self.__socket.send(msg.encode())
+        except BrokenPipeError:
+            print("ERREUR, SOCKET FERME")
+
+    def message_obtenue(self):
+        return self.__message
+
+    def message_(self, msg):
+        self.__message = msg
+
+
+    def __reception(self, conn):
+        msg = ""
+        try:
+            while msg != "kill" and msg != "disconnect" and msg != "reset":
+                msg = conn.recv(1024).decode()
+                print(msg)
+        except ConnectionResetError:
+            return -1
+
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        client = Client("127.0.0.1", 8080)
     else:
-        print('La connexion à pu être établie')
+        host = sys.argv[1]
+        port = int(sys.argv[2])
+        client = Client(host, port)
+    try:
+        client.connection()
+        client.dialogue()
+    except KeyboardInterrupt:
+        print("INTERRUPTION CLAVIER !")
 
-
-def communication(client):
-    global user
-    while True:
-        mess = input(f"{user}>")
-        client.send(mess.encode())
-        if mess == "kill":
-            client.send(mess.encode("kill"))
-            client.close()
-        elif mess == "disconnect":
-            message = "disconnect"
-            client.send(mess.encode({message}))
-
-
-def reception(client):
-    global user
-    while True:
-        data = client.recv(1024).decode()
-        print(data)
-
-
-def main():
-    global s_t
-    global user
-    print('-----CLIENT-----')
-    user = input('Inserer le nom du client : ')
-    connection()
-    t1 = threading.Thread(target=communication, args=[client])
-    t2 = threading.Thread(target=reception, args=[client])
-    t1.start()
-    t2.start()
-    t1.join()
-    t2.join()
-
-
-
-if __name__ == '__main__':
-   main()
