@@ -1,7 +1,7 @@
 import socket
 import threading
-import sys
 from PyQt5.QtWidgets import *
+import sys
 
 
 class Client():
@@ -48,6 +48,16 @@ class Client():
         self.__socket.close()
 
 
+    def envoie(self,message):
+        try:
+            self.__socket.send(message.encode())
+            data = self.__socket.recv(1024).decode()
+        except:
+            print("Problem")
+        else:
+            return data
+
+
     def __envoi(self):
         msg = input("CLIENT>")
         try:
@@ -58,8 +68,8 @@ class Client():
     def message_obtenue(self):
         return self.__message
 
-    def message_(self, msg):
-        self.__message = msg
+    def message_envoyer(self, message):
+        self.__message = message
 
 
     def __reception(self, conn):
@@ -72,6 +82,21 @@ class Client():
             return -1
 
 
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        client = Client("127.0.0.1", 8080)
+    else:
+        print('La connexion à pu être établie')
+
+
+
+
+######################################################################################################################################################################################
+
+
+
+
+
 class GUI(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -82,18 +107,17 @@ class GUI(QMainWindow):
         widget.setLayout(grid)
 
 
-        self.__ESPACE = QLabel("")
-        self.__ESPACE2 = QLabel("")
-        self.__ESPACE3 = QLabel("")
 
         self.__CONNECTION_LABEL = QLabel("IP - Port :")
         self.__COMMANDE = QLabel("Commande :")
         self.__CONNECTION = QPushButton("Connexion")
 
+        self.__DISCONNECT = QPushButton("Disconnect")
+
         self.__ADRESSE_IP = QLineEdit("127.0.0.1")
         self.__PORT_EDIT = QLineEdit("8080")
 
-        self.__CMD = QLineEdit()
+        self.__CMD = QLineEdit("RAM")
 
         self.__TB = QTextBrowser()
         self.__TB.setAcceptRichText(True)
@@ -102,17 +126,15 @@ class GUI(QMainWindow):
 
 
         grid.addWidget(self.__CMD, 8,1 , 1,2)  # composant, ligne, colonne
-        grid.addWidget(self.__TB, 4,1 , 1,2)
+        grid.addWidget(self.__TB, 1,1 , 4,2) # ligne, colonne, hauteur, largueur
         grid.addWidget(self.__CLEAR, 8, 3)
 
-        grid.addWidget(self.__ESPACE, 1, 0)  # composant, ligne, colonne
-        grid.addWidget(self.__ESPACE2, 4, 0)  # composant, ligne, colonne
-        grid.addWidget(self.__ESPACE3, 7, 0)  # composant, ligne, colonne
 
         grid.addWidget(self.__CONNECTION_LABEL, 0, 0)  # composant, ligne, colonne
         grid.addWidget(self.__ADRESSE_IP, 0, 1)  # composant, ligne, colonne
         grid.addWidget(self.__PORT_EDIT, 0, 2)  # composant, ligne, colonne
         grid.addWidget(self.__CONNECTION, 0, 3)  # composant, ligne, colonne
+        grid.addWidget(self.__DISCONNECT, 1,3)  # composant, ligne, colonne
 
         grid.addWidget(self.__COMMANDE, 8, 0)  # composant, ligne, colonne
 
@@ -123,10 +145,45 @@ class GUI(QMainWindow):
         self.__CLEAR.pressed.connect(self._clear)
 
 
+    def _connexion(self):
+        host = str(self.__ADRESSE_IP.text())
+        port = int(self.__PORT_EDIT.text())
+        self.__socket = Client(host, port)
+        try:
+            self.__socket.Connect()
+        except ConnectionRefusedError:
+            print("CONNECTION ERREUR SERVEUR")
+            return -1
+        except ConnectionError:
+            print("CONNECTION ERROR")
+            return -1
+        except ConnectionResetError:
+            print('CONNECTION RESET ERROR')
+            return -1
+        else:
+            print("Connexion réussie !")
+            return 0
+
+
     def _ajout_commande(self):
-        text = self.__CMD.text()
-        self.__TB.append(text)
-        self.__CMD.clear()
+        try:
+            Client.message_envoyer(self.__socket, self.__CMD.text())
+        except BrokenPipeError:
+            print("socket closed")
+
+        message = Client.message_obtenue(self.__socket)
+        t = threading.Thread(target=Client.envoie, args=[self.__socket, message])
+        t.start()
+        self.__TB.append(Client.envoie(self.__socket, message))
+        t.join()
+
 
     def _clear(self):
         self.__TB.clear()
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = GUI()
+    window.show()
+    app.exec()
