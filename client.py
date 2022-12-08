@@ -53,7 +53,7 @@ class Client():
             self.__socket.send(message.encode())
             data = self.__socket.recv(1024).decode()
         except:
-            print("Problem")
+            print("ERREUR")
         else:
             return data
 
@@ -65,10 +65,10 @@ class Client():
         except BrokenPipeError:
             print("ERREUR, SOCKET FERME")
 
-    def message_obtenue(self):
+    def get_message(self):
         return self.__message
 
-    def message_envoyer(self, message):
+    def set_message(self, message):
         self.__message = message
 
 
@@ -166,16 +166,10 @@ class GUI(QMainWindow):
 
 
     def _ajout_commande(self):
-        try:
-            Client.message_envoyer(self.__socket, self.__CMD.text())
-        except BrokenPipeError:
-            print("socket closed")
-
-        message = Client.message_obtenue(self.__socket)
-        t = threading.Thread(target=Client.envoie, args=[self.__socket, message])
-        t.start()
-        self.__TB.append(Client.envoie(self.__socket, message))
-        t.join()
+        Client.set_message(self.__socket, self.__CMD.text())
+        msg=Client.get_message(self.__socket)
+        data=Client.envoie(self.__socket,msg)
+        self.__TB.append(data)
 
 
     def _clear(self):
