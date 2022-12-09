@@ -106,41 +106,50 @@ class GUI(QMainWindow):
         grid = QGridLayout()
         widget.setLayout(grid)
 
-
+        with open('client.css', 'r') as f:
+            client = f.read()
+        app.setStyleSheet(client)
 
         self.__CONNECTION_LABEL = QLabel("IP - Port :")
         self.__COMMANDE = QLabel("Commande :")
         self.__CONNECTION = QPushButton("Connexion")
-
-        self.__DISCONNECT = QPushButton("Disconnect")
-
         self.__ADRESSE_IP = QLineEdit("127.0.0.1")
         self.__PORT_EDIT = QLineEdit("8080")
-
         self.__CMD = QLineEdit("RAM")
-
         self.__TB = QTextBrowser()
         self.__TB.setAcceptRichText(True)
-
         self.__ENTRER = QPushButton('Entrer')
         self.__CLEAR = QPushButton('Clear')
+        self.__ETAT = QLabel("DÉCONNECTÉ")
+
+        self.__FENETRE = QPushButton("Nouvelle fenêtre")
+        self.__DISCONNECT = QPushButton("DISCONNECT")
+        self.__KILL = QPushButton("KILL")
+        self.__RESET = QPushButton("RESET")
 
 
-        grid.addWidget(self.__CMD, 8,1 , 1,2)  # composant, ligne, colonne
-        grid.addWidget(self.__TB, 1,1 , 4,2) # ligne, colonne, hauteur, largueur
-        grid.addWidget(self.__CLEAR, 9,0, 1,5)
-        grid.addWidget(self.__ENTRER, 8, 3)
+        grid.addWidget(self.__CMD, 8,1 , 1,4)  # composant, ligne, colonne
+        grid.addWidget(self.__TB, 2,1 , 4,4) # ligne, colonne, hauteur, largueur
+        grid.addWidget(self.__CLEAR, 9,0 , 1,6)
+        grid.addWidget(self.__ENTRER, 8, 5)
+        grid.addWidget(self.__ETAT, 0,6)
 
 
-        grid.addWidget(self.__CONNECTION_LABEL, 0, 0)  # composant, ligne, colonne
-        grid.addWidget(self.__ADRESSE_IP, 0, 1)  # composant, ligne, colonne
-        grid.addWidget(self.__PORT_EDIT, 0, 2)  # composant, ligne, colonne
-        grid.addWidget(self.__CONNECTION, 0, 3)  # composant, ligne, colonne
-        grid.addWidget(self.__DISCONNECT, 1,3)  # composant, ligne, colonne
+        grid.addWidget(self.__CONNECTION_LABEL, 1, 1)  # composant, ligne, colonne
+        grid.addWidget(self.__ADRESSE_IP, 1, 2)  # composant, ligne, colonne
+        grid.addWidget(self.__PORT_EDIT, 1, 3)  # composant, ligne, colonne
+        grid.addWidget(self.__CONNECTION, 1, 5)  # composant, ligne, colonne
+        grid.addWidget(self.__DISCONNECT, 2, 6)  # composant, ligne, colonne
+        grid.addWidget(self.__KILL, 3, 6)  # composant, ligne, colonne
+        grid.addWidget(self.__RESET, 4, 6)  # composant, ligne, colonne
+        grid.addWidget(self.__FENETRE, 0, 0)  # composant, ligne, colonne
 
         grid.addWidget(self.__COMMANDE, 8, 0)  # composant, ligne, colonne
 
         self.setWindowTitle("Interface de surveillance de serveurs ou de machines clients")
+
+        d = "Veuillez vous connectez s'il vous plaît."
+        self.__TB.append(d)
 
         self.__CONNECTION.clicked.connect(self._connexion)
         self.__ENTRER.clicked.connect(self._ajout_commande)
@@ -148,11 +157,13 @@ class GUI(QMainWindow):
 
 
     def _connexion(self):
+        self.__CONNECTION.setEnabled(False)
         host = str(self.__ADRESSE_IP.text())
         port = int(self.__PORT_EDIT.text())
         self.__socket = Client(host, port)
         try:
             self.__socket.Connect()
+            self.__ETAT.setText("CONNECTÉ")
         except ConnectionRefusedError:
             print("CONNECTION ERREUR SERVEUR")
             return -1
@@ -163,15 +174,25 @@ class GUI(QMainWindow):
             print('CONNECTION RESET ERROR')
             return -1
         else:
-            print("Connexion réussie !")
+            c = "Connexion réussie !"
+            self.__TB.append(c)
             return 0
 
 
+
     def _ajout_commande(self):
-        Client.set_message(self.__socket, self.__CMD.text())
-        msg=Client.get_message(self.__socket)
-        data=Client.envoie(self.__socket,msg)
-        self.__TB.append(data)
+        try:
+            Client.set_message(self.__socket, self.__CMD.text())
+            msg=Client.get_message(self.__socket)
+            data=Client.envoie(self.__socket,msg)
+        except:
+            mess = QMessageBox()
+            mess.setIcon(QMessageBox.Warning)
+            mess.setText("VOUS N'ETES PAS CONNECTER !")
+            mess.exec()
+        else:
+            self.__TB.append(data)
+
 
 
     def _clear(self):
