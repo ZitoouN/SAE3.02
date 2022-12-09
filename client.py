@@ -122,12 +122,14 @@ class GUI(QMainWindow):
         self.__TB = QTextBrowser()
         self.__TB.setAcceptRichText(True)
 
+        self.__ENTRER = QPushButton('Entrer')
         self.__CLEAR = QPushButton('Clear')
 
 
         grid.addWidget(self.__CMD, 8,1 , 1,2)  # composant, ligne, colonne
         grid.addWidget(self.__TB, 1,1 , 4,2) # ligne, colonne, hauteur, largueur
-        grid.addWidget(self.__CLEAR, 8, 3)
+        grid.addWidget(self.__CLEAR, 9,0, 1,5)
+        grid.addWidget(self.__ENTRER, 8, 3)
 
 
         grid.addWidget(self.__CONNECTION_LABEL, 0, 0)  # composant, ligne, colonne
@@ -141,8 +143,8 @@ class GUI(QMainWindow):
         self.setWindowTitle("Interface de surveillance de serveurs ou de machines clients")
 
         self.__CONNECTION.clicked.connect(self._connexion)
-        self.__CMD.returnPressed.connect(self._ajout_commande)
-        self.__CLEAR.pressed.connect(self._clear)
+        self.__ENTRER.clicked.connect(self._ajout_commande)
+        self.__CLEAR.clicked.connect(self._clear)
 
 
     def _connexion(self):
