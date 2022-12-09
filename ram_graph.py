@@ -18,7 +18,7 @@ def animate(i):
 
     plt.ylim(0,100)
     plt.xlabel('Temps en secondes (s)')
-    plt.ylabel('Usage du CPU (%)')
+    plt.ylabel('Usage de la RAM (%)')
 
 ani = FuncAnimation(plt.gcf(), animate, interval=150)
 
