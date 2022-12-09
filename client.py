@@ -1,7 +1,9 @@
 import socket
 import threading
-from PyQt5.QtWidgets import *
 import sys
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+import os
 
 
 class Client():
@@ -121,6 +123,8 @@ class GUI(QMainWindow):
         self.__ENTRER = QPushButton('Entrer')
         self.__CLEAR = QPushButton('Clear')
         self.__ETAT = QLabel("DÉCONNECTÉ")
+        self.__ETAT.setStyleSheet("color: red; font-weight: bold;")
+        self.__SOCKET = socket.socket()
 
         self.__FENETRE = QPushButton("Nouvelle fenêtre")
         self.__DISCONNECT = QPushButton("DISCONNECT")
@@ -156,16 +160,25 @@ class GUI(QMainWindow):
         self.__CLEAR.clicked.connect(self._clear)
 
 
+
     def _connexion(self):
-        self.__CONNECTION.setEnabled(False)
         host = str(self.__ADRESSE_IP.text())
         port = int(self.__PORT_EDIT.text())
         self.__socket = Client(host, port)
         try:
             self.__socket.Connect()
             self.__ETAT.setText("CONNECTÉ")
+            self.__ETAT.setStyleSheet("""
+            QLabel {
+                    color: #00FF00;
+                    font-weight: bold;
+                    }
+                    """)
         except ConnectionRefusedError:
-            print("CONNECTION ERREUR SERVEUR")
+            mess = QMessageBox()
+            mess.setIcon(QMessageBox.Warning)
+            mess.setText("CONNECTION ERREUR SERVEUR !")
+            mess.exec()
             return -1
         except ConnectionError:
             print("CONNECTION ERROR")
@@ -185,6 +198,29 @@ class GUI(QMainWindow):
             Client.set_message(self.__socket, self.__CMD.text())
             msg=Client.get_message(self.__socket)
             data=Client.envoie(self.__socket,msg)
+
+            if msg == 'kill':
+                m = 'SERVEUR FERMER !'
+                self.__TB.append(m)
+                QCoreApplication.instance().quit()
+
+            if msg == 'reset':
+                m = 'Redémarrage ...'
+                self.__TB.append(m)
+                d = "Veuillez vous connectez s'il vous plaît."
+                self.__TB.append(d)
+                i = 'DÉCONNECTÉ'
+                self.__ETAT.setText(i)
+                self.__ETAT.setStyleSheet("color: red; font-weight: bold;")
+
+            if msg == 'disconnect':
+                m = 'Deconnexion ... !'
+                self.__TB.append(m)
+                i = 'DÉCONNECTÉ'
+                self.__ETAT.setText(i)
+                self.__ETAT.setStyleSheet("color: red; font-weight: bold;")
+
+
         except:
             mess = QMessageBox()
             mess.setIcon(QMessageBox.Warning)
@@ -192,7 +228,6 @@ class GUI(QMainWindow):
             mess.exec()
         else:
             self.__TB.append(data)
-
 
 
     def _clear(self):
