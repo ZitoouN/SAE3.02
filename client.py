@@ -100,6 +100,8 @@ if __name__ == "__main__":
 
 
 class GUI(QMainWindow):
+    singleton: 'GUI' = None
+
     def __init__(self):
         super().__init__()
         widget = QWidget()
