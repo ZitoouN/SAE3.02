@@ -68,6 +68,7 @@ class Client:
         except BrokenPipeError:
             print("ERREUR, SOCKET FERME")
 
+
     def get_message(self):
         return self.__message
 
@@ -121,7 +122,7 @@ class GUI(QMainWindow):
         self.__COMMANDE = QLabel("Commande :")
         self.__CONNECTION = QPushButton("Connexion")
         self.__ADRESSE_IP = QLineEdit("127.0.0.1")
-        self.__PORT_EDIT = QLineEdit("8080")
+        self.__PORT_EDIT = QLineEdit("10013")
         self.__CMD = QLineEdit("RAM")
         self.__TB = QTextBrowser()
         self.__TB.setAcceptRichText(True)
