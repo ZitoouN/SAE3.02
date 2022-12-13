@@ -119,6 +119,7 @@ class GUI(QMainWindow):
 
         self.__CONNECTION_LABEL = QLabel("IP - Port :")
         self.__LOG_LABEL = QLabel("LOGS")
+        self.__LOG_LABEL.setStyleSheet("font-size: 18px; font-weight: bold;")
         self.__COMMANDE = QLabel("Commande :")
         self.__CONNECTION = QPushButton("Connexion")
         self.__ADRESSE_IP = QLineEdit("127.0.0.1")
@@ -161,8 +162,6 @@ class GUI(QMainWindow):
         d = "Veuillez vous connectez s'il vous plaît."
         self.__TB.append(d)
 
-        named_tuple = time.localtime()  # get struct_time
-        time_string = time.strftime("%H:%M:%S", named_tuple)
 
         self.setWindowTitle("Interface de surveillance de serveurs ou de machines clients")
         self.__CONNECTION.clicked.connect(self._connexion)
@@ -179,6 +178,7 @@ class GUI(QMainWindow):
         try:
             self.__socket.Connect()
             self.__ETAT.setText("CONNECTÉ")
+            self.__LOG.append("-----LOG DU SERVEUR-----")
             self.__ETAT.setStyleSheet("""
             QLabel {
                     color: #00FF00;
@@ -206,9 +206,12 @@ class GUI(QMainWindow):
 
     def _ajout_commande(self):
         try:
+            named_tuple = time.localtime()  # get struct_time
+            time_string = time.strftime("%H:%M:%S", named_tuple)
+
             self.cmd = self.__CMD.text()
             self.__TB.append("client>" + self.cmd)
-            self.__LOG.append("Message du client : " + self.cmd)
+            self.__LOG.append(time_string + " - " + "Message du client : " + self.cmd)
 
             Client.set_message(self.__socket, self.__CMD.text())
             msg = Client.get_message(self.__socket)
