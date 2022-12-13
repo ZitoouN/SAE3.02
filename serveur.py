@@ -12,9 +12,9 @@ def Serveur():
     while data != "kill" :
         data = ""
         server_socket = socket.socket()
-        server_socket.bind(("127.0.0.1", 8080))
+        server_socket.bind(("127.0.0.1", 10013))
 
-        server_socket.listen(1)
+        server_socket.listen(5)
         print('-----SERVEUR-----')
         print('En attente de connexion client ...')
 
@@ -38,8 +38,7 @@ def Serveur():
                         nbr_cpu = psutil.cpu_count()
                         cpus = psutil.cpu_percent(interval=2, percpu=True)
                         cpusfinal = str(cpus)[1:-1]
-                        conn.send(f"Nombre de CPU logiques dans le système : {nbr_cpu} ".encode())
-                        conn.send(f"Utilisation de tous les CPU : {cpusfinal} ".encode())
+                        conn.send(f"Nombre de CPU logiques dans le système : {nbr_cpu}, Utilisation de tous les CPU : {cpusfinal}".encode())
 
 
                     elif data == 'RAM':
@@ -47,8 +46,7 @@ def Serveur():
                         total = round(meminfo.total / 1_073_741_824, 2)
                         utilise = round(meminfo.used / 1_073_741_824, 2)
                         disponible = round(meminfo.free / 1_073_741_824, 2)
-                        conn.send(
-                            f"Total de RAM : {total} Go, RAM utilsé : {utilise} Go, RAM disponible : {disponible} Go".encode())
+                        conn.send(f"Total de RAM : {total} Go, RAM utilsé : {utilise} Go, RAM disponible : {disponible} Go".encode())
 
 
                     elif data == 'IP':
@@ -66,11 +64,11 @@ def Serveur():
                         conn.send(f"Nom de la machine : {platform.node()}".encode())
 
 
+
                     elif data == 'Connexion information':
                         conn.send(
                             f"Le nom de la machine est {platform.node()}, son IP est la suivante : {socket.gethostbyname(socket.gethostname())}".encode())
 
-                    conn.send(data.encode())
                 conn.close()
         print ("CONNECTION FERMÉ !")
 
