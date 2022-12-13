@@ -31,6 +31,7 @@ def Serveur():
                     data = conn.recv(1024).decode()
                     print ("Message du client : ", data)
 
+
                     if data == 'OS':
                         conn.send(f"{platform.system()}".encode())
 
@@ -68,6 +69,14 @@ def Serveur():
                     elif data == 'Connexion information':
                         conn.send(
                             f"Le nom de la machine est {platform.node()}, son IP est la suivante : {socket.gethostbyname(socket.gethostname())}".encode())
+
+
+                    elif data != "OS" and data != "RAM" and data != "CPU" and data != "Name" and data != "IP" and data != "Name" and data != "Connexion information":
+                        inconnue = "Commande inconnue"
+                        conn.send(inconnue.encode())
+
+                    else :
+                        conn.send(data.encode())
 
                 conn.close()
         print ("CONNECTION FERMÉ !")
