@@ -37,9 +37,9 @@ def Serveur():
 
                     elif data == 'CPU':
                         nbr_cpu = psutil.cpu_count()
-                        cpus = psutil.cpu_percent(interval=2, percpu=True)
-                        cpusfinal = str(cpus)[1:-1]
-                        conn.send(f"Nombre de CPU logiques dans le système : {nbr_cpu}, Utilisation de tous les CPU : {cpusfinal}".encode())
+                        cpus = psutil.cpu_percent()
+                        cpusfinal = str(cpus)
+                        conn.send(f"Nombre de CPU logiques dans le système : {nbr_cpu}, Utilisation de tous les CPU : {cpusfinal}%".encode())
 
 
                     elif data == 'RAM':
@@ -71,9 +71,23 @@ def Serveur():
                             f"Le nom de la machine est {platform.node()}, son IP est la suivante : {socket.gethostbyname(socket.gethostname())}".encode())
 
 
+                    elif data == "reset":
+                        rien = ""
+                        conn.send(rien.encode())
+
+                    elif data == "kill":
+                        rien = " "
+                        conn.send(rien.encode())
+
+                    elif data == "disconnect":
+                        rien = " "
+                        conn.send(rien.encode())
+
+
                     elif data != "OS" and data != "RAM" and data != "CPU" and data != "Name" and data != "IP" and data != "Name" and data != "Connexion information":
                         inconnue = "Commande inconnue"
                         conn.send(inconnue.encode())
+
 
                     else :
                         conn.send(data.encode())
