@@ -3,8 +3,12 @@ from socket import AF_INET
 import platform
 import psutil
 from ipaddress import IPv4Network
+import subprocess
+import sys
+
 
 def Serveur():
+    systeme = platform.uname()
     data = ""
     conn = None
     server_socket = None
@@ -71,6 +75,38 @@ def Serveur():
                             f"Le nom de la machine est {platform.node()}, son IP est la suivante : {socket.gethostbyname(socket.gethostname())}".encode())
 
 
+
+                    elif data[0:4] == "Linux:":
+                        if sys.platform == 'linux':
+                            divise = data.split(':')[1]
+                            resultat = subprocess.check_output(divise, shell=True).decode('cp850')
+                            conn.send(f"Commande {divise} : {resultat}".encode())
+                        else:
+                            conn.send("Commande échouée : OS inadéquat".encode())
+
+
+                    elif data[0:4] == "DOS:":
+                        if sys.platform == 'win32':
+                            divise = data.split(':')[1]
+                            resultat = subprocess.check_output(divise, shell=True).decode('cp850')
+                            conn.send(f"Commande {divise} : {resultat}".encode())
+                        else:
+                            conn.send("Commande échouée : OS inadéquat".encode())
+
+
+                    elif data == "python --version":
+                        python = subprocess.getoutput('python --version')
+                        conn.send(f"La version de python est la suivante : {python}".encode())
+
+
+                    elif data[0:4] == 'ping':
+                        p = data.split(' ')
+                        destinataire = p[1]
+                        conn.send(subprocess.getoutput('ping ' + destinataire).encode())
+
+
+
+
                     elif data == "reset":
                         rien = ""
                         conn.send(rien.encode())
@@ -84,13 +120,9 @@ def Serveur():
                         conn.send(rien.encode())
 
 
-                    elif data != "OS" and data != "RAM" and data != "CPU" and data != "Name" and data != "IP" and data != "Name" and data != "Connexion information":
+                    else :
                         inconnue = "Commande inconnue"
                         conn.send(inconnue.encode())
-
-
-                    else :
-                        conn.send(data.encode())
 
                 conn.close()
         print ("CONNECTION FERMÉ !")
