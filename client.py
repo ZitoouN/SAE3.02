@@ -4,6 +4,7 @@ import sys
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 import time
+import os
 
 
 class Client:
@@ -118,7 +119,7 @@ class GUI(QMainWindow):
         self.txtcmd = ""
 
         self.__CONNECTION_LABEL = QLabel("IP - Port :")
-        self.__LOG_LABEL = QLabel("LOGS")
+        self.__LOG_LABEL = QLabel("LOG")
         self.__LOG_LABEL.setStyleSheet("font-size: 18px; font-weight: bold;")
         self.__COMMANDE = QLabel("Commande :")
         self.__CONNECTION = QPushButton("Connexion")
@@ -135,10 +136,9 @@ class GUI(QMainWindow):
         self.__ETAT = QLabel("DÉCONNECTÉ")
         self.__ETAT.setStyleSheet("color: red; font-weight: bold;")
         self.__SOCKET = socket.socket()
-        self.__list = QComboBox()
-        self.__list.addItems(['RAM','CPU','OS','IP','Name','Connexion information'])
         self.__ESPACE = QLabel("")
         self.__ESPACE2 = QLabel("")
+        self.__HELP = QPushButton("?")
 
 
 
@@ -149,13 +149,13 @@ class GUI(QMainWindow):
         grid.addWidget(self.__CLEAR2, 9, 15, 1, 4)
         grid.addWidget(self.__ENTRER, 9,6, 1,2)
         grid.addWidget(self.__ETAT, 0,0)
-        grid.addWidget(self.__list, 9,10, 1,1)
         grid.addWidget(self.__CONNECTION_LABEL, 2,0)  # composant, ligne, colonne
         grid.addWidget(self.__LOG_LABEL, 2, 16,1, 4)  # composant, ligne, colonne
         grid.addWidget(self.__ADRESSE_IP, 2, 1, 1,3)  # composant, ligne, colonne
         grid.addWidget(self.__PORT_EDIT, 2, 4, 1,3)  # composant, ligne, colonne
         grid.addWidget(self.__CONNECTION, 2, 7, 1,4)  # composant, ligne, colonne
         grid.addWidget(self.__COMMANDE, 9, 0)  # composant, ligne, colonne
+        grid.addWidget(self.__HELP, 9, 9, 1,2)  # composant, ligne, colonne
         grid.addWidget(self.__ESPACE, 1, 0)  # composant, ligne, colonne
         grid.addWidget(self.__ESPACE2, 0, 11)  # composant, ligne, colonne
 
@@ -168,6 +168,7 @@ class GUI(QMainWindow):
         self.__ENTRER.clicked.connect(self._ajout_commande)
         self.__CLEAR.clicked.connect(self._clear)
         self.__CLEAR2.clicked.connect(self._clear2)
+        self.__HELP.clicked.connect(self._aide)
 
 
 
@@ -178,7 +179,7 @@ class GUI(QMainWindow):
         try:
             self.__socket.Connect()
             self.__ETAT.setText("CONNECTÉ")
-            self.__LOG.append("-----LOG DU SERVEUR-----")
+            self.__LOG.append("----- LOG DU SERVEUR -----")
             self.__ETAT.setStyleSheet("""
             QLabel {
                     color: #00FF00;
@@ -202,48 +203,64 @@ class GUI(QMainWindow):
             self.__TB.append(c)
             return 0
 
-
+    def _aide(self):
+        help = QMessageBox()
+        help.setWindowTitle("Aide")
+        help.setText("Permet de convertire un nombre soit de Kelvin vers Celcius, soit de Celcuis vers Kelvin")
+        help.exec_()
 
     def _ajout_commande(self):
-        try:
-            named_tuple = time.localtime()  # get struct_time
-            time_string = time.strftime("%H:%M:%S", named_tuple)
+            try:
+                if self.__ETAT.text() == 'CONNECTÉ':
+                    named_tuple = time.localtime()
+                    time_string = time.strftime("%H:%M:%S", named_tuple)
 
-            self.cmd = self.__CMD.text()
-            self.__TB.append("client>" + self.cmd)
-            self.__LOG.append(time_string + " - " + "Message du client : " + self.cmd)
+                    self.cmd = self.__CMD.text()
+                    self.__TB.append("client> " + self.cmd)
+                    self.__LOG.append(time_string + " - " + "Message du client : " + self.cmd)
 
-            Client.set_message(self.__socket, self.__CMD.text())
-            msg = Client.get_message(self.__socket)
-            data = Client.envoie(self.__socket, msg)
+                    Client.set_message(self.__socket, self.__CMD.text())
+                    msg = Client.get_message(self.__socket)
+                    data = Client.envoie(self.__socket, msg)
 
-            if msg == 'kill':
-                m = 'SERVEUR FERMER !'
-                self.__TB.append(m)
-                QCoreApplication.instance().quit()
+                    if msg == 'kill':
+                        m = 'SERVEUR FERMER !'
+                        self.__TB.append(m)
+                        QCoreApplication.instance().quit()
 
-            elif msg == 'reset':
-                m = 'Redémarrage ...'
-                self.__TB.append(m)
-                d = "Veuillez vous connectez s'il vous plaît."
-                self.__TB.append(d)
-                i = 'DÉCONNECTÉ'
-                self.__ETAT.setText(i)
-                self.__ETAT.setStyleSheet("color: red; font-weight: bold;")
+                    elif msg == 'reset':
+                        m = 'Redémarrage ...'
+                        self.__TB.append(m)
+                        d = "Veuillez vous connectez s'il vous plaît."
+                        self.__TB.append(d)
+                        i = 'DÉCONNECTÉ'
+                        self.__ETAT.setText(i)
+                        self.__ETAT.setStyleSheet("color: red; font-weight: bold;")
 
 
-            elif msg == 'disconnect':
-                m = 'Deconnexion ... !'
-                self.__TB.append(m)
-                QCoreApplication.instance().quit()
+                    elif msg == 'disconnect':
+                        m = 'Deconnexion ... !'
+                        self.__TB.append(m)
+                        QCoreApplication.instance().quit()
 
-        except:
-            mess = QMessageBox()
-            mess.setIcon(QMessageBox.Warning)
-            mess.setText("VOUS N'ETES PAS CONNECTER !")
-            mess.exec()
-        else:
-            self.__TB.append(data)
+                else:
+                    mess = QMessageBox()
+                    mess.setIcon(QMessageBox.Warning)
+                    mess.setText("VOUS N'ETES PAS CONNECTER !")
+                    mess.exec()
+                    os.execv(sys.executable, [sys.executable] + sys.argv)
+
+            except:
+                os.execv(sys.executable, [sys.executable] + sys.argv)
+                mess = QMessageBox()
+                mess.setIcon(QMessageBox.Warning)
+                mess.setText("VOUS N'ETES PAS CONNECTER !")
+                mess.exec()
+
+
+            else:
+                self.__TB.append(data)
+
 
     def _clear(self):
         self.__TB.clear()
@@ -251,8 +268,49 @@ class GUI(QMainWindow):
     def _clear2(self):
         self.__LOG.clear()
 
+
+class Onglet(QTabWidget):
+    def __init__(self):
+        super().__init__()
+        widget = QWidget()
+        grid = QGridLayout()
+        widget.setLayout(grid)
+
+        self.__tab = QTabWidget(self)
+        self.__tab.setTabsClosable(True)
+
+        self.__page = QWidget(self.__tab)
+        self.__page_layout = QGridLayout()
+        self.__page.setLayout(self.__page_layout)
+
+        self.__page2 = QWidget(self.__tab)
+        self.__page2_layout = QGridLayout()
+        self.__page2.setLayout(self.__page2_layout)
+
+        grid.addWidget(self.__tab)
+        self.addTab(self.__page, "Accueil")
+
+        grid.addWidget(self.__tab)
+        self.addTab(self.__page2, "Fichier CSV")
+
+        grid.addWidget(self.__tab)
+        self.addTab(GUI(), "Page de connexion")
+
+
+        self.__tab.tabCloseRequested.connect(self._remove)
+
+
+    def _remove(self):
+        self.__tab.removeTab(self.__tab.currentIndex())
+
+
+    def create_tab(self):
+        self.tab = QTabWidget()
+        self.tab.tabCloseRequested.connect(self.delete)
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = GUI()
+    window = Onglet()
     window.show()
     app.exec()
