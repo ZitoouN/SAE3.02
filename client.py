@@ -175,33 +175,41 @@ class GUI(QMainWindow):
     def _connexion(self):
         host = str(self.__ADRESSE_IP.text())
         port = int(self.__PORT_EDIT.text())
-        self.__socket = Client(host, port)
-        try:
-            self.__socket.Connect()
-            self.__ETAT.setText("CONNECTÉ")
-            self.__LOG.append("----- LOG DU SERVEUR -----")
-            self.__ETAT.setStyleSheet("""
-            QLabel {
-                    color: #00FF00;
-                    font-weight: bold;
-                    }
-                    """)
-        except ConnectionRefusedError:
+
+        if self.__ETAT.text() == 'DÉCONNECTÉ':
+            try:
+                self.__socket = Client(host, port)
+                self.__socket.Connect()
+                self.__ETAT.setText("CONNECTÉ")
+                self.__LOG.append("----- LOG DU SERVEUR -----")
+                self.__ETAT.setStyleSheet("""
+                QLabel {
+                        color: #00FF00;
+                        font-weight: bold;
+                        }
+                        """)
+            except ConnectionRefusedError:
+                mess = QMessageBox()
+                mess.setIcon(QMessageBox.Warning)
+                mess.setText("ERREUR SERVEUR !")
+                mess.exec()
+                return -1
+            except ConnectionError:
+                print("CONNECTION ERROR")
+                return -1
+            except ConnectionResetError:
+                print('CONNECTION RESET ERROR')
+                return -1
+            else:
+                c = "Connexion réussie !"
+                self.__TB.append(c)
+                return 0
+        else:
             mess = QMessageBox()
             mess.setIcon(QMessageBox.Warning)
-            mess.setText("CONNECTION ERREUR SERVEUR !")
+            mess.setText("VOUS ÊTES DEJA CONNECTER !")
             mess.exec()
-            return -1
-        except ConnectionError:
-            print("CONNECTION ERROR")
-            return -1
-        except ConnectionResetError:
-            print('CONNECTION RESET ERROR')
-            return -1
-        else:
-            c = "Connexion réussie !"
-            self.__TB.append(c)
-            return 0
+
 
     def _aide(self):
         help = QMessageBox()
@@ -210,8 +218,8 @@ class GUI(QMainWindow):
         help.exec_()
 
     def _ajout_commande(self):
-            try:
-                if self.__ETAT.text() == 'CONNECTÉ':
+            if self.__ETAT.text() == 'CONNECTÉ':
+                try:
                     named_tuple = time.localtime()
                     time_string = time.strftime("%H:%M:%S", named_tuple)
 
@@ -241,25 +249,28 @@ class GUI(QMainWindow):
                     elif msg == 'disconnect':
                         m = 'Deconnexion ... !'
                         self.__TB.append(m)
-                        QCoreApplication.instance().quit()
+                        d = "Veuillez vous connectez s'il vous plaît."
+                        self.__TB.append(d)
+                        i = 'DÉCONNECTÉ'
+                        self.__ETAT.setText(i)
+                        self.__ETAT.setStyleSheet("color: red; font-weight: bold;")
 
-                else:
+                except:
+                    os.execv(sys.executable, [sys.executable] + sys.argv)
                     mess = QMessageBox()
                     mess.setIcon(QMessageBox.Warning)
                     mess.setText("VOUS N'ETES PAS CONNECTER !")
                     mess.exec()
-                    os.execv(sys.executable, [sys.executable] + sys.argv)
 
-            except:
-                os.execv(sys.executable, [sys.executable] + sys.argv)
+                else:
+                    self.__TB.append(data)
+
+
+            else:
                 mess = QMessageBox()
                 mess.setIcon(QMessageBox.Warning)
                 mess.setText("VOUS N'ETES PAS CONNECTER !")
                 mess.exec()
-
-
-            else:
-                self.__TB.append(data)
 
 
     def _clear(self):
