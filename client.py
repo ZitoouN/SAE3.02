@@ -5,6 +5,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 import time
 import os
+import csv
 
 
 class Client:
@@ -280,6 +281,59 @@ class GUI(QMainWindow):
         self.__LOG.clear()
 
 
+class MyTable(QTableWidget):
+    def __init__(self, r, c):
+        super().__init__(r, c)
+        self.check_change = True
+        self.init_ui()
+
+    def init_ui(self):
+        self.cellChanged.connect(self.actuel)
+        self.show()
+
+    def actuel(self):
+            if self.check_change:
+                ligne = self.currentRow()
+                col = self.currentColumn()
+                value = self.item(ligne, col)
+
+    def open_sheet(self):
+        self.check_change = False
+        path = QFileDialog.getOpenFileName(self, 'Text files', os.getenv('HOME'), '*.txt')
+
+        if path[0] != '':
+            with open(path[0], newline='') as csv_file:
+                self.setRowCount(0)
+                self.setColumnCount(2)
+                my_file = csv.reader(csv_file, delimiter=':')
+
+                for row_data in my_file:
+                    ligne = self.rowCount()
+                    self.insertRow(ligne)
+
+                    if len(row_data) > 10:
+                        self.setColumnCount(len(row_data))
+
+                    for column, stuff in enumerate(row_data):
+                        item = QTableWidgetItem(stuff)
+                        self.setItem(ligne, column, item)
+        self.check_change = True
+
+
+class Sheet(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.form_widget = MyTable(10, 2)
+        self.setCentralWidget(self.form_widget)
+        col_headers = ['IP', 'PORT']
+        self.form_widget.setHorizontalHeaderLabels(col_headers)
+
+        self.form_widget.open_sheet()
+
+        self.show()
+
+
 class Onglet(QTabWidget):
     def __init__(self):
         super().__init__()
@@ -308,20 +362,8 @@ class Onglet(QTabWidget):
         self.addTab(GUI(), "Page de connexion")
 
 
-        self.__tab.tabCloseRequested.connect(self._remove)
-
-
-    def _remove(self):
-        self.__tab.removeTab(self.__tab.currentIndex())
-
-
-    def create_tab(self):
-        self.tab = QTabWidget()
-        self.tab.tabCloseRequested.connect(self.delete)
-
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = Onglet()
-    window.show()
-    app.exec()
+    sheet = Sheet()
+    sys.exit(app.exec_())
