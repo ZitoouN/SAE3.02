@@ -16,7 +16,7 @@ def Serveur():
     while data != "kill" :
         data = ""
         server_socket = socket.socket()
-        server_socket.bind(("127.0.0.1", 10013))
+        server_socket.bind(("0.0.0.0", 10013))
 
         server_socket.listen(5)
         print('-----SERVEUR-----')
