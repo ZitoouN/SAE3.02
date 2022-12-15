@@ -325,7 +325,7 @@ class CSV(QWidget):
         self.table.setRowCount(10)
         self.table.setColumnCount(2)
 
-        with open("zoo.txt") as file:
+        with open("serveurs.txt") as file:
             col_headers = ['IP', 'PORT']
             self.table.setHorizontalHeaderLabels(col_headers)
             reader = csv.reader(file, delimiter=":")
