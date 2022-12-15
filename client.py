@@ -215,8 +215,37 @@ class GUI(QMainWindow):
     def _aide(self):
         help = QMessageBox()
         help.setWindowTitle("Aide")
-        help.setText("Permet de convertire un nombre soit de Kelvin vers Celcius, soit de Celcuis vers Kelvin")
+        help.setText("\nLes commandes :"
+                     "\n "
+                     "\n "
+                     "\nCommandes simples à une ou plusieurs machines :"
+                     "\n "
+                     "\nOS  :  demande l'OS et le type d'OS par exemple MacOS Darwin ou Linux"
+                     "\nRAM  :  mémoire totale, mémoire utilisée et mémoire libre restante"
+                     "\nCPU  :  utilisation de la CPU"
+                     "\nIP  :  adresse IP"
+                     "\nName  :  nom de la machine"
+                     "\n "
+                     "\n "
+                     "\nEnvoyer des commandes aux serveurs de machines :"
+                     "\n "
+                     "\ndisconnect  :  déconnexion de l’interface permettant de libérer la machine monitorée pour permettre de libérer le serveur pour d’autres requêtes"
+                     "\nConnexion information : IP, nom de la machine"
+                     "\nkill  :  tue le serveur"
+                     "\nreset  :  reset du serveur"
+                     "\n "
+                     "\n "
+                     "\nCommandes données par l’utilisateur, par exemple :"
+                     "\n "
+                     "\nDOS:dir"
+                     "\nDOS:mkdir toto"
+                     "\nLinux:ls -la"
+                     "\nPowershell:get-process"
+                     "\npython --version"
+                     "\nping 192.157.65.78"
+                     )
         help.exec_()
+
 
     def _ajout_commande(self):
             if self.__ETAT.text() == 'CONNECTÉ':
@@ -281,57 +310,32 @@ class GUI(QMainWindow):
         self.__LOG.clear()
 
 
-class MyTable(QTableWidget):
-    def __init__(self, r, c):
-        super().__init__(r, c)
-        self.check_change = True
-        self.init_ui()
-
-    def init_ui(self):
-        self.cellChanged.connect(self.actuel)
-        self.show()
-
-    def actuel(self):
-            if self.check_change:
-                ligne = self.currentRow()
-                col = self.currentColumn()
-                value = self.item(ligne, col)
-
-    def open_sheet(self):
-        self.check_change = False
-        path = QFileDialog.getOpenFileName(self, 'Text files', os.getenv('HOME'), '*.txt')
-
-        if path[0] != '':
-            with open(path[0], newline='') as csv_file:
-                self.setRowCount(0)
-                self.setColumnCount(2)
-                my_file = csv.reader(csv_file, delimiter=':')
-
-                for row_data in my_file:
-                    ligne = self.rowCount()
-                    self.insertRow(ligne)
-
-                    if len(row_data) > 10:
-                        self.setColumnCount(len(row_data))
-
-                    for column, stuff in enumerate(row_data):
-                        item = QTableWidgetItem(stuff)
-                        self.setItem(ligne, column, item)
-        self.check_change = True
-
-
-class Sheet(QMainWindow):
+class CSV(QWidget):
     def __init__(self):
         super().__init__()
+        self.CSV()
 
-        self.form_widget = MyTable(10, 2)
-        self.setCentralWidget(self.form_widget)
-        col_headers = ['IP', 'PORT']
-        self.form_widget.setHorizontalHeaderLabels(col_headers)
+    def CSV(self):
+        self.setGeometry(1000, 1000, 1000, 1000)
+        self.setWindowTitle("QTableWidget Example")
 
-        self.form_widget.open_sheet()
+        self.table = QTableWidget(self)
+        self.table.setRowCount(10)
+        self.table.setColumnCount(2)
 
+        with open("zoo.txt") as file:
+            col_headers = ['IP', 'PORT']
+            self.table.setHorizontalHeaderLabels(col_headers)
+            reader = csv.reader(file, delimiter=":")
+            for i, row in enumerate(reader):
+                for j, col in enumerate(row):
+                    self.table.setItem(i, j, QTableWidgetItem(col))
+
+
+        self.table.show()
         self.show()
+
+
 
 
 class Onglet(QTabWidget):
@@ -356,7 +360,7 @@ class Onglet(QTabWidget):
         self.addTab(self.__page, "Accueil")
 
         grid.addWidget(self.__tab)
-        self.addTab(self.__page2, "Fichier CSV")
+        self.addTab(CSV(), "Fichier CSV")
 
         grid.addWidget(self.__tab)
         self.addTab(GUI(), "Page de connexion")
@@ -365,5 +369,5 @@ class Onglet(QTabWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = Onglet()
-    sheet = Sheet()
-    sys.exit(app.exec_())
+    window.show()
+    app.exec()
