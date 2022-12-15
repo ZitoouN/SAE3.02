@@ -8,7 +8,7 @@ import sys
 
 
 def Serveur():
-    systeme = platform.uname()
+    system = platform.uname()
     data = ""
     conn = None
     server_socket = None
@@ -76,11 +76,20 @@ def Serveur():
 
 
 
-                    elif data[0:4] == "Linux:":
+                    elif data == "Linux:ls -la":
                         if sys.platform == 'linux':
-                            divise = data.split(':')[1]
-                            resultat = subprocess.check_output(divise, shell=True).decode('cp850')
-                            conn.send(f"Commande {divise} : {resultat}".encode())
+                            l = "Linux:ls -la"
+                            resultat = subprocess.getoutput("ls -la")
+                            conn.send(f"Commande {l} : {resultat}".encode())
+                        else:
+                            conn.send("Commande échouée : OS inadéquat".encode())
+
+
+                    elif data == "Powershell:get-process":
+                        if sys.platform == 'win32':
+                            l = "Powershell:get-process"
+                            resultat = subprocess.getoutput("powershell.exe get-process")
+                            conn.send(f"Commande {l} : {resultat}".encode())
                         else:
                             conn.send("Commande échouée : OS inadéquat".encode())
 
@@ -89,6 +98,15 @@ def Serveur():
                         if sys.platform == 'win32':
                             divise = data.split(':')[1]
                             resultat = subprocess.check_output(divise, shell=True).decode('cp850')
+                            conn.send(f"Commande {divise} : {resultat}".encode())
+                        else:
+                            conn.send("Commande échouée : OS inadéquat".encode())
+
+
+                    elif data[0:4] == "Powershell:":
+                        if sys.platform == 'win32':
+                            divise = data.split(':')[1]
+                            resultat = subprocess.run(["powershell.exe","Get-Process | Sort-Object CPU -Descending | Select-Object -First 10"], capture_output=True).decode("cp850")
                             conn.send(f"Commande {divise} : {resultat}".encode())
                         else:
                             conn.send("Commande échouée : OS inadéquat".encode())
@@ -103,8 +121,6 @@ def Serveur():
                         p = data.split(' ')
                         destinataire = p[1]
                         conn.send(subprocess.getoutput('ping ' + destinataire).encode())
-
-
 
 
                     elif data == "reset":
