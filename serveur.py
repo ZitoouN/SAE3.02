@@ -37,7 +37,7 @@ def Serveur():
 
 
                     if data == 'OS':
-                        conn.send(f"{platform.system()}".encode())
+                        conn.send(f"Le sytème est sous : {platform.system()}".encode())
 
                     elif data == 'CPU':
                         nbr_cpu = psutil.cpu_count()
@@ -90,8 +90,19 @@ def Serveur():
                             l = "Powershell:get-process"
                             resultat = subprocess.getoutput("powershell.exe get-process")
                             conn.send(f"Commande {l} : {resultat}".encode())
+                            print(f"Checkbug : Powershell:get-process FAIT")
                         else:
                             conn.send("Commande échouée : OS inadéquat".encode())
+
+
+                    elif data == "DOS:dir":
+                        if sys.platform == 'win32':
+                            l = "DOS:dir"
+                            resultat = subprocess.getoutput("dir")
+                            conn.send(f"Commande {l} : {resultat}".encode())
+                        else:
+                            conn.send("Commande échouée : OS inadéquat".encode())
+
 
 
                     elif data[0:4] == "DOS:":
@@ -102,14 +113,6 @@ def Serveur():
                         else:
                             conn.send("Commande échouée : OS inadéquat".encode())
 
-
-                    elif data[0:4] == "Powershell:":
-                        if sys.platform == 'win32':
-                            divise = data.split(':')[1]
-                            resultat = subprocess.run(["powershell.exe","Get-Process | Sort-Object CPU -Descending | Select-Object -First 10"], capture_output=True).decode("cp850")
-                            conn.send(f"Commande {divise} : {resultat}".encode())
-                        else:
-                            conn.send("Commande échouée : OS inadéquat".encode())
 
 
                     elif data == "python --version":
