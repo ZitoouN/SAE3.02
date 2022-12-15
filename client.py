@@ -103,7 +103,6 @@ if __name__ == "__main__":
 
 
 class GUI(QMainWindow):
-    singleton: 'GUI' = None
 
     def __init__(self):
         super().__init__()
@@ -313,6 +312,9 @@ class GUI(QMainWindow):
 class CSV(QWidget):
     def __init__(self):
         super().__init__()
+        widget = QWidget()
+        grid = QGridLayout()
+        widget.setLayout(grid)
         self.CSV()
 
     def CSV(self):
@@ -356,8 +358,6 @@ class Onglet(QTabWidget):
         self.__page2_layout = QGridLayout()
         self.__page2.setLayout(self.__page2_layout)
 
-        grid.addWidget(self.__tab)
-        self.addTab(self.__page, "Accueil")
 
         grid.addWidget(self.__tab)
         self.addTab(CSV(), "Fichier CSV")
