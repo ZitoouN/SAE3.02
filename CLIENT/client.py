@@ -253,36 +253,40 @@ class GUI(QMainWindow):
                     time_string = time.strftime("%H:%M:%S", named_tuple)
 
                     self.cmd = self.__CMD.text()
-                    self.__TB.append("client> " + self.cmd)
-                    self.__LOG.append(time_string + " - " + "Message du client : " + self.cmd)
+                    if len(self.__CMD.text()) > 0:
+                        self.__TB.append("client> " + self.cmd)
+                        self.__LOG.append(time_string + " - " + "Message du client : " + self.cmd)
 
-                    Client.set_message(self.__socket, self.__CMD.text())
-                    msg = Client.get_message(self.__socket)
-                    data = Client.envoie(self.__socket, msg)
+                        Client.set_message(self.__socket, self.__CMD.text())
+                        msg = Client.get_message(self.__socket)
+                        data = Client.envoie(self.__socket, msg)
 
-                    if msg == 'kill':
-                        m = 'SERVEUR FERMER !'
-                        self.__TB.append(m)
-                        QCoreApplication.instance().quit()
+                        if msg == 'kill':
+                            m = 'SERVEUR FERMER !'
+                            self.__TB.append(m)
+                            QCoreApplication.instance().quit()
 
-                    elif msg == 'reset':
-                        m = 'Redémarrage ...'
-                        self.__TB.append(m)
-                        d = "Veuillez vous connectez s'il vous plaît."
-                        self.__TB.append(d)
-                        i = 'DÉCONNECTÉ'
-                        self.__ETAT.setText(i)
-                        self.__ETAT.setStyleSheet("color: red; font-weight: bold;")
+                        elif msg == 'reset':
+                            m = 'Redémarrage ...'
+                            self.__TB.append(m)
+                            d = "Veuillez vous connectez s'il vous plaît."
+                            self.__TB.append(d)
+                            i = 'DÉCONNECTÉ'
+                            self.__ETAT.setText(i)
+                            self.__ETAT.setStyleSheet("color: red; font-weight: bold;")
 
 
-                    elif msg == 'disconnect':
-                        m = 'Deconnexion ... !'
-                        self.__TB.append(m)
-                        d = "Veuillez vous connectez s'il vous plaît."
-                        self.__TB.append(d)
-                        i = 'DÉCONNECTÉ'
-                        self.__ETAT.setText(i)
-                        self.__ETAT.setStyleSheet("color: red; font-weight: bold;")
+                        elif msg == 'disconnect':
+                            m = 'Deconnexion ... !'
+                            self.__TB.append(m)
+                            d = "Veuillez vous connectez s'il vous plaît."
+                            self.__TB.append(d)
+                            i = 'DÉCONNECTÉ'
+                            self.__ETAT.setText(i)
+                            self.__ETAT.setStyleSheet("color: red; font-weight: bold;")
+
+                        else:
+                            self.__TB.append(data)
 
                 except:
                     os.execv(sys.executable, [sys.executable] + sys.argv)
@@ -291,8 +295,6 @@ class GUI(QMainWindow):
                     mess.setText("VOUS N'ETES PAS CONNECTER !")
                     mess.exec()
 
-                else:
-                    self.__TB.append(data)
 
 
             else:
