@@ -233,7 +233,7 @@ QMenu::separator
 QFrame
 {
     border-radius: 0px;
-    /*border: 1px solid #76797C;*/
+
 }
 
 
@@ -335,7 +335,7 @@ QTabWidget::pane {
 }
 
 QTabWidget::tab-bar {
-    left: 5px; /* move to the right by 5px */
+    left: 5px;
 }
 
 
@@ -432,7 +432,7 @@ QHeaderView::section:checked
     background-color: #848383;
  }
 
- /* style the sort indicator */
+ 
 QHeaderView::down-arrow {
     image: url(:/qss_icons/rc/down_arrow.png);
 }
@@ -462,7 +462,7 @@ QToolBox::tab {
     border-top-right-radius: 5px;
 }
 
-QToolBox::tab:selected { /* italicize selected tabs */
+QToolBox::tab:selected { 
     font: italic;
     background-color: #323232;
     border-color: #D1DBCB;
