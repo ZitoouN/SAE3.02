@@ -325,13 +325,17 @@ class CSV(QWidget):
         self.table.setRowCount(10)
         self.table.setColumnCount(2)
 
-        with open("serveurs.txt") as file:
-            col_headers = ['IP', 'PORT']
-            self.table.setHorizontalHeaderLabels(col_headers)
-            reader = csv.reader(file, delimiter=":")
-            for i, row in enumerate(reader):
-                for j, col in enumerate(row):
-                    self.table.setItem(i, j, QTableWidgetItem(col))
+        try:
+            with open("serveurs.txt") as file:
+                col_headers = ['IP', 'PORT']
+                self.table.setHorizontalHeaderLabels(col_headers)
+                reader = csv.reader(file, delimiter=":")
+                for i, row in enumerate(reader):
+                    for j, col in enumerate(row):
+                        self.table.setItem(i, j, QTableWidgetItem(col))
+        except:
+            with open("serveurs.txt", 'w') as file:
+                file.write('')
 
 
         self.table.show()
