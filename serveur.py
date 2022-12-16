@@ -5,13 +5,10 @@ import psutil
 from ipaddress import IPv4Network
 import subprocess
 import sys
-
+import os
 
 def Serveur():
-    system = platform.uname()
     data = ""
-    conn = None
-    server_socket = None
 
     while data != "kill" :
         data = ""
@@ -69,11 +66,9 @@ def Serveur():
                         conn.send(f"Nom de la machine : {platform.node()}".encode())
 
 
-
                     elif data == 'Connexion information':
                         conn.send(
                             f"Le nom de la machine est {platform.node()}, son IP est la suivante : {socket.gethostbyname(socket.gethostname())}".encode())
-
 
 
                     elif data == "Linux:ls -la":
@@ -85,26 +80,6 @@ def Serveur():
                             conn.send("Commande échouée : OS inadéquat".encode())
 
 
-                    elif data == "Powershell:get-process":
-                        if sys.platform == 'win32':
-                            l = "Powershell:get-process"
-                            resultat = subprocess.getoutput("powershell.exe get-process")
-                            conn.send(f"Commande {l} : {resultat}".encode())
-                            print(f"Checkbug : Powershell:get-process FAIT")
-                        else:
-                            conn.send("Commande échouée : OS inadéquat".encode())
-
-
-                    elif data == "DOS:dir":
-                        if sys.platform == 'win32':
-                            l = "DOS:dir"
-                            resultat = subprocess.getoutput("dir")
-                            conn.send(f"Commande {l} : {resultat}".encode())
-                        else:
-                            conn.send("Commande échouée : OS inadéquat".encode())
-
-
-
                     elif data[0:4] == "DOS:":
                         if sys.platform == 'win32':
                             divise = data.split(':')[1]
@@ -113,6 +88,14 @@ def Serveur():
                         else:
                             conn.send("Commande échouée : OS inadéquat".encode())
 
+
+                    elif data == "Powershell:get-process":
+                        if sys.platform == 'win32':
+                            l = "Powershell:get-process"
+                            resultat = subprocess.getoutput("powershell.exe get-process")
+                            conn.send(f"Commande {l} : {resultat}".encode())
+                        else:
+                            conn.send("Commande échouée : OS inadéquat".encode())
 
 
                     elif data == "python --version":
@@ -148,6 +131,8 @@ def Serveur():
 
         server_socket.close()
         print ("SERVEUR FERMÉ !")
+
+
 
 
 if __name__ == '__main__':
